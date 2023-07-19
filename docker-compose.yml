@@ -2,7 +2,7 @@ version: "3.9"
 services:
   relay:
     build: "."
-    command: "-config /config/api-config.yml"
+    command: "-config /config/config.yml"
     restart: on-failure:5
     ports:
       - "9000:9000"
@@ -11,6 +11,7 @@ services:
       - ./local:/config
     depends_on:
       - postgres
+
   postgres:
     image: postgres:14.1-alpine
     ports:

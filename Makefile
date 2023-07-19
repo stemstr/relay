@@ -2,7 +2,7 @@ LDFLAGS="-X main.commit=$(shell git rev-parse --short HEAD) -X main.buildDate=$(
 
 .PHONY: build
 build:
-	CGO_ENABLED=1 go build -ldflags=$(LDFLAGS) -o ./bin/relay ./cmd/relay
+	CGO_ENABLED=1 go build -ldflags=$(LDFLAGS) -o ./bin/relay .
 
 .PHONY: run
 run: build
