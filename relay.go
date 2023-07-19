@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/fiatjaf/relayer/v2"
 	"github.com/fiatjaf/relayer/v2/storage/postgresql"
@@ -70,6 +71,10 @@ func (r Relay) Init() error {
 }
 
 func (r Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) bool {
+	if !pubkeyIsAllowed(r.cfg.AllowedPubkeys, evt.PubKey) {
+		return false
+	}
+
 	// block events that are too large
 	jsonb, _ := json.Marshal(evt)
 	if len(jsonb) > 10000 {
@@ -104,6 +109,23 @@ func (r Relay) Start() error {
 
 	log.Printf("listening on 0.0.0.0:%v\n", r.cfg.Port)
 	return server.Start("0.0.0.0", r.cfg.Port)
+}
+
+func pubkeyIsAllowed(pubkeys []string, pubkey string) bool {
+	// If no whitelist of pubkeys are provided, it's allowed
+	if len(pubkeys) == 0 {
+		return true
+	}
+
+	allowed := false
+	for _, allowedPubkey := range pubkeys {
+		if strings.EqualFold(allowedPubkey, pubkey) {
+			allowed = true
+			break
+		}
+	}
+
+	return allowed
 }
 
 var defaultAllowedKinds = []int{

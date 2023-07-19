@@ -7,13 +7,14 @@ import (
 )
 
 type Config struct {
-	Port             int    `yaml:"port"`
-	DatabaseURL      string `yaml:"database_url"`
-	AllowedKinds     []int  `yaml:"allowed_kinds"`
-	Nip11Pubkey      string `yaml:"nip11_pubkey"`
-	Nip11Contact     string `yaml:"nip11_contact"`
-	Nip11Description string `yaml:"nip11_description"`
-	Nip11Version     string `yaml:"nip11_version"`
+	Port             int      `yaml:"port"`
+	DatabaseURL      string   `yaml:"database_url"`
+	AllowedKinds     []int    `yaml:"allowed_kinds"`
+	AllowedPubkeys   []string `yaml:"allowed_pubkeys"`
+	Nip11Pubkey      string   `yaml:"nip11_pubkey"`
+	Nip11Contact     string   `yaml:"nip11_contact"`
+	Nip11Description string   `yaml:"nip11_description"`
+	Nip11Version     string   `yaml:"nip11_version"`
 }
 
 // Load Config from a yaml file at path.
