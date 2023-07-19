@@ -1,0 +1,26 @@
+version: "3.9"
+services:
+  relay:
+    build: "."
+    command: "-config /config/api-config.yml"
+    restart: on-failure:5
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - ./local:/config
+    depends_on:
+      - postgres
+  postgres:
+    image: postgres:14.1-alpine
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: relay 
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes: 
+  pgdata:
