@@ -18,15 +18,9 @@ func main() {
 		log.Println(err)
 		os.Exit(1)
 	}
+	log.Printf("%#v\n", cfg)
 
-	relay, err := newRelay(
-		cfg.Port,
-		cfg.DatabaseURL,
-		cfg.Nip11Pubkey,
-		cfg.Nip11Contact,
-		cfg.Nip11Description,
-		cfg.Nip11Version,
-	)
+	relay, err := newRelay(cfg)
 	if err != nil {
 		log.Println(err)
 		os.Exit(1)

@@ -12,36 +12,22 @@ import (
 	"github.com/nbd-wtf/go-nostr/nip11"
 )
 
-var allowedKinds = []int{
-	nostr.KindSetMetadata,
-	nostr.KindTextNote,
-	nostr.KindContactList,
-	nostr.KindBoost,
-	nostr.KindReaction,
-	1808,  // Stemstr Music Track
-	6,     // NIP-18: Repost
-	18,    // NIP-18: Generic Repost
-	9735,  // NIP-57: Zaps
-	30078, // NIP-78: Application-specific Data
-	1063,  // NIP-94: File Metadata
-}
+func newRelay(cfg Config) (*Relay, error) {
+	if len(cfg.AllowedKinds) == 0 {
+		cfg.AllowedKinds = defaultAllowedKinds
+	}
 
-func newRelay(port int, databaseURL, infoPubkey, infoContact, infoDesc, infoVersion string) (*Relay, error) {
 	r := Relay{
-		port: port,
+		cfg: cfg,
 		storage: &postgresql.PostgresBackend{
-			DatabaseURL:       databaseURL,
+			DatabaseURL:       cfg.DatabaseURL,
 			QueryLimit:        1000,
 			QueryAuthorsLimit: 1000,
 			QueryIDsLimit:     1000,
 			QueryKindsLimit:   10,
 			QueryTagsLimit:    20,
 		},
-		updates:     make(chan nostr.Event),
-		infoPubkey:  infoPubkey,
-		infoContact: infoContact,
-		infoDesc:    infoDesc,
-		infoVersion: infoVersion,
+		updates: make(chan nostr.Event),
 	}
 
 	if err := r.storage.Init(); err != nil {
@@ -52,25 +38,20 @@ func newRelay(port int, databaseURL, infoPubkey, infoContact, infoDesc, infoVers
 }
 
 type Relay struct {
-	port        int
-	storage     *postgresql.PostgresBackend
-	updates     chan nostr.Event
-	infoPubkey  string
-	infoContact string
-	infoDesc    string
-	infoVersion string
+	cfg     Config
+	storage *postgresql.PostgresBackend
+	updates chan nostr.Event
 }
 
 func (r *Relay) GetNIP11InformationDocument() nip11.RelayInformationDocument {
-	supportedNIPs := []int{9, 11, 12, 15, 16, 20, 78, 94}
 	return nip11.RelayInformationDocument{
 		Name:          r.Name(),
-		Description:   r.infoDesc,
-		PubKey:        r.infoPubkey,
-		Contact:       r.infoContact,
-		SupportedNIPs: supportedNIPs,
+		Description:   r.cfg.Nip11Description,
+		PubKey:        r.cfg.Nip11Pubkey,
+		Contact:       r.cfg.Nip11Contact,
+		SupportedNIPs: []int{9, 11, 12, 15, 16, 20, 78, 94},
 		Software:      "https://github.com/Stemstr",
-		Version:       r.infoVersion,
+		Version:       r.cfg.Nip11Version,
 	}
 }
 
@@ -96,7 +77,7 @@ func (r Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) bool {
 	}
 
 	allowed := false
-	for _, kind := range allowedKinds {
+	for _, kind := range r.cfg.AllowedKinds {
 		if evt.Kind == kind {
 			allowed = true
 			break
@@ -121,6 +102,20 @@ func (r Relay) Start() error {
 		return fmt.Errorf("relayer new server: %w", err)
 	}
 
-	log.Printf("listening on 0.0.0.0:%v\n", r.port)
-	return server.Start("0.0.0.0", r.port)
+	log.Printf("listening on 0.0.0.0:%v\n", r.cfg.Port)
+	return server.Start("0.0.0.0", r.cfg.Port)
+}
+
+var defaultAllowedKinds = []int{
+	nostr.KindSetMetadata,
+	nostr.KindTextNote,
+	nostr.KindContactList,
+	nostr.KindBoost,
+	nostr.KindReaction,
+	1808,  // Stemstr Music Track
+	6,     // NIP-18: Repost
+	18,    // NIP-18: Generic Repost
+	9735,  // NIP-57: Zaps
+	30078, // NIP-78: Application-specific Data
+	1063,  // NIP-94: File Metadata
 }
