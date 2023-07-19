@@ -114,7 +114,7 @@ var defaultAllowedKinds = []int{
 	nostr.KindReaction,
 	1808,  // Stemstr Music Track
 	6,     // NIP-18: Repost
-	18,    // NIP-18: Generic Repost
+	16,    // NIP-18: Generic Repost
 	9735,  // NIP-57: Zaps
 	30078, // NIP-78: Application-specific Data
 	1063,  // NIP-94: File Metadata
