@@ -71,8 +71,11 @@ func (r Relay) Init() error {
 }
 
 func (r Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) bool {
-	if !pubkeyIsAllowed(r.cfg.AllowedPubkeys, evt.PubKey) {
-		return false
+	// NOTE: beta release gates kind: 1808,1 to only whitelisted users.
+	if evt.Kind == 1808 || evt.Kind == 1 {
+		if !pubkeyIsAllowed(r.cfg.AllowedPubkeys, evt.PubKey) {
+			return false
+		}
 	}
 
 	// block events that are too large
