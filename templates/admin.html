@@ -77,7 +77,7 @@
     </table>
   <div>
 
-  <script>
+  <script nonce="{{ .nonce }}">
     /**
      * Query Parmas
      */
@@ -91,9 +91,7 @@
     !!kind && (document.getElementById('eventkind').value = kind);
     !!pk && (document.getElementById('eventpk').value = pk);
     !!limit && (document.getElementById('eventlimit').value = limit);
-  </script>
 
-  <script>
     /**
      * Form functions
      */

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
@@ -62,11 +63,18 @@ func adminHandler(cfg Config, db relayer.Storage) func(http.ResponseWriter, *htt
 			return
 		}
 
+		tkn := make([]byte, 16)
+		rand.Read(tkn)
+		nonce := fmt.Sprintf("%x", tkn)
+		csp := fmt.Sprintf("script-src: 'self' 'unsafe-inline' 'nonce-%s'", nonce)
+
 		data := map[string]any{
 			"events": events,
+			"nonce":  nonce,
 		}
 
 		w.Header().Set("Content-Type", "text/html")
+		w.Header().Set("Content-Security-Policy", csp)
 		if err := t.Execute(w, data); err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
