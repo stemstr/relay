@@ -6,3 +6,5 @@ nip11_version: 0.1
 database_url: "postgresql://admin:password@localhost:5432/relay?sslmode=disable"
 allowed_kinds: []
 allowed_pubkeys: []
+admins:
+  admin: password

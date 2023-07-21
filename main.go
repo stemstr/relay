@@ -26,6 +26,9 @@ func main() {
 		os.Exit(1)
 	}
 
+	relay.server.Router().HandleFunc("/admin", adminHandler(cfg, relay.storage))
+	relay.server.Router().HandleFunc("/admin/delete", adminDeleteHandler(cfg, relay.storage))
+
 	if err := relay.Start(); err != nil {
 		log.Printf("relay err: %v\n", err)
 		os.Exit(1)
