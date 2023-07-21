@@ -35,11 +35,18 @@ func newRelay(cfg Config) (*Relay, error) {
 		return nil, fmt.Errorf("relay init: %w", err)
 	}
 
+	server, err := relayer.NewServer(r)
+	if err != nil {
+		return nil, fmt.Errorf("relayer new server: %w", err)
+	}
+	r.server = server
+
 	return &r, nil
 }
 
 type Relay struct {
 	cfg     Config
+	server  *relayer.Server
 	storage *postgresql.PostgresBackend
 	updates chan nostr.Event
 }
@@ -105,13 +112,8 @@ func (relay Relay) InjectEvents() chan nostr.Event {
 }
 
 func (r Relay) Start() error {
-	server, err := relayer.NewServer(r)
-	if err != nil {
-		return fmt.Errorf("relayer new server: %w", err)
-	}
-
 	log.Printf("listening on 0.0.0.0:%v\n", r.cfg.Port)
-	return server.Start("0.0.0.0", r.cfg.Port)
+	return r.server.Start("0.0.0.0", r.cfg.Port)
 }
 
 func pubkeyIsAllowed(pubkeys []string, pubkey string) bool {

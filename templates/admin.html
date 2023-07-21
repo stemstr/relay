@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<head>
+  <meta charset=utf-8>
+  <title>stemstr relay</title>
+  <style>
+    body {
+      margin: 10px auto;
+      width: 1200px;
+      max-width: 90%;
+    }
+    div {
+      padding: 10px;
+    }
+    input[type=number] {
+      max-width: 80px;
+    }
+		td {
+			max-width: 100px;
+			overflow: hidden;
+			padding: 10px;
+		}
+		td.eventdate{
+			max-width: 300px;
+		}
+		td.eventcontent {
+			max-width: 500px;
+		}
+		td.eventactions {
+			width: 150px;
+			max-width: 150px;
+			display: inline-block;
+		}
+    td.eventactions > button {
+			display: inline;
+		}
+  </style>
+</head>
+<body>
+  <h1>stemstr relay</h1>
+
+  <div style="border-bottom: solid 1px #ddd;">
+    <form action=/admin>
+      <label>event id: <input id=eventid name=id /></label>
+      <label>kind: <input id=eventkind name=kind type=number /></label>
+      <label>pubkey: <input id=eventpk name=pubkey /></label>
+      <label>limit: <input id=eventlimit name=limit type=number value=100 /></label>
+      <button>Search</button>
+      <button onClick="clearForm()">Clear</button>
+    </form>
+  </div>
+
+  <div>
+    <table>
+      <tr>
+        <th>Created At</th>
+        <th>ID</th>
+        <th>Npub</th>
+        <th>Kind</th>
+        <th>Content</th>
+        <th>Actions</th>
+      </tr>
+
+      {{ range .events }}
+      <tr>
+        <td class="eventdate">{{ .PrettyTime }}</td>
+        <td class="eventid">{{ .ID }}</td>
+        <td class="eventpk"><a href="/admin?pubkey={{ .PubKey }}">{{ .Npub }}</a></td>
+        <td class="eventkind"><a href="/admin?kind={{ .Kind }}">{{ .Kind }}</a></td>
+        <td class="eventcontent">{{ .Content }}</td>
+        <td class="eventactions">
+          <button onclick="viewJSON({{ .String }})">JSON</button>
+          <button onclick="deleteById({{ .ID }}, {{ .String }})">delete</button>
+        </td>
+      </tr>
+      {{ end }}
+
+    </table>
+  <div>
+
+  <script nonce="{{ .nonce }}">
+    /**
+     * Query Parmas
+     */
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+    const kind = urlParams.get('kind');
+    const pk = urlParams.get('pubkey');
+    const limit = urlParams.get('limit');
+
+    !!id && (document.getElementById('eventid').value = id);
+    !!kind && (document.getElementById('eventkind').value = kind);
+    !!pk && (document.getElementById('eventpk').value = pk);
+    !!limit && (document.getElementById('eventlimit').value = limit);
+
+    /**
+     * Form functions
+     */
+    const deleteById = (id, jsonb) => {
+      const msg = `Are you sure you want to delete this event?\n\n${jsonb}`
+      if (!confirm(msg)) {
+        return
+      }
+
+      const params = new URLSearchParams({ id }).toString()
+      const url = `/admin/delete?${params}`
+
+      fetch(url, { method: 'DELETE' }).then(() => {
+        location.reload();
+      });
+    }
+
+    const viewJSON = (jsonb) => {
+      alert(jsonb)
+    }
+
+    const clearForm = () => {
+        document.querySelector("form").reset();
+    }
+  </script>
+</body>
