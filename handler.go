@@ -85,7 +85,7 @@ func adminHandler(cfg Config, db relayer.Storage) func(http.ResponseWriter, *htt
 
 func adminDeleteHandler(cfg Config, db relayer.Storage) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodDelete {
+		if !strings.EqualFold(r.Method, http.MethodDelete) {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
