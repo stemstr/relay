@@ -4,6 +4,8 @@ import (
 	"flag"
 	"log"
 	"os"
+
+	"github.com/jmoiron/sqlx"
 )
 
 func main() {
@@ -20,7 +22,13 @@ func main() {
 	}
 	log.Printf("%#v\n", cfg)
 
-	relay, err := newRelay(cfg)
+	subscriptionsDB, err := sqlx.Connect("postgres", cfg.SubscriptionsDBURL)
+	if err != nil {
+		log.Println(err)
+		os.Exit(1)
+	}
+
+	relay, err := newRelay(cfg, subscriptionsDB)
 	if err != nil {
 		log.Println(err)
 		os.Exit(1)

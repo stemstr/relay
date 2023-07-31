@@ -5,15 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/fiatjaf/relayer/v2"
 	"github.com/fiatjaf/relayer/v2/storage/postgresql"
+	"github.com/jmoiron/sqlx"
 	"github.com/nbd-wtf/go-nostr"
 	"github.com/nbd-wtf/go-nostr/nip11"
 )
 
-func newRelay(cfg Config) (*Relay, error) {
+func newRelay(cfg Config, subscriptionsDB *sqlx.DB) (*Relay, error) {
 	if len(cfg.AllowedKinds) == 0 {
 		cfg.AllowedKinds = defaultAllowedKinds
 	}
@@ -29,6 +29,8 @@ func newRelay(cfg Config) (*Relay, error) {
 			QueryTagsLimit:    20,
 		},
 		updates: make(chan nostr.Event),
+
+		subscriptionsDB: subscriptionsDB,
 	}
 
 	if err := r.storage.Init(); err != nil {
@@ -49,6 +51,8 @@ type Relay struct {
 	server  *relayer.Server
 	storage *postgresql.PostgresBackend
 	updates chan nostr.Event
+
+	subscriptionsDB *sqlx.DB
 }
 
 func (r *Relay) GetNIP11InformationDocument() nip11.RelayInformationDocument {
@@ -78,9 +82,13 @@ func (r Relay) Init() error {
 }
 
 func (r Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) bool {
-	// NOTE: beta release gates kind: 1808,1 to only whitelisted users.
-	if evt.Kind == 1808 || evt.Kind == 1 {
-		if !pubkeyIsAllowed(r.cfg.AllowedPubkeys, evt.PubKey) {
+	if kindRequiresSubscription(evt.Kind) {
+		if ok, err := isSubscribed(r.subscriptionsDB, evt.PubKey); !ok {
+			if err != nil {
+				log.Printf("isSubscribed: %v\n", err)
+			}
+
+			log.Printf("rejected event, no sub. pubkey: %v", evt.PubKey)
 			return false
 		}
 	}
@@ -114,23 +122,6 @@ func (relay Relay) InjectEvents() chan nostr.Event {
 func (r Relay) Start() error {
 	log.Printf("listening on 0.0.0.0:%v\n", r.cfg.Port)
 	return r.server.Start("0.0.0.0", r.cfg.Port)
-}
-
-func pubkeyIsAllowed(pubkeys []string, pubkey string) bool {
-	// If no whitelist of pubkeys are provided, it's allowed
-	if len(pubkeys) == 0 {
-		return true
-	}
-
-	allowed := false
-	for _, allowedPubkey := range pubkeys {
-		if strings.EqualFold(allowedPubkey, pubkey) {
-			allowed = true
-			break
-		}
-	}
-
-	return allowed
 }
 
 var defaultAllowedKinds = []int{

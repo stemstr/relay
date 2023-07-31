@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/fiatjaf/relayer/v2 v2.0.1-0.20230605144923-55f0f5a225a0
+	github.com/jmoiron/sqlx v1.3.1
 	github.com/nbd-wtf/go-nostr v0.18.3
 	github.com/stretchr/testify v1.8.4
 	gopkg.in/yaml.v3 v3.0.1
@@ -21,7 +22,6 @@ require (
 	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/gobwas/ws v1.2.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
-	github.com/jmoiron/sqlx v1.3.1 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/lib/pq v1.10.3 // indirect
