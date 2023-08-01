@@ -100,9 +100,12 @@ func (r Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) bool {
 		return false
 	}
 
-	if !fromStemstrClient(evt) {
-		log.Printf("rejected event, not from stemstr.app: %s", string(jsonb))
-		return false
+	// TODO(bndw): remove kind filter once client sets tag on all events
+	if evt.Kind == 1 || evt.Kind == 1808 {
+		if !fromStemstrClient(evt) {
+			log.Printf("rejected event, not from stemstr.app: %s", string(jsonb))
+			return false
+		}
 	}
 
 	allowed := false
