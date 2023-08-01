@@ -128,7 +128,6 @@ var defaultAllowedKinds = []int{
 	nostr.KindSetMetadata,
 	nostr.KindTextNote,
 	nostr.KindContactList,
-	nostr.KindBoost,
 	nostr.KindReaction,
 	1808,  // Stemstr Music Track
 	6,     // NIP-18: Repost
