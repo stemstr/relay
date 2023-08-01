@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/fiatjaf/relayer/v2"
 	"github.com/fiatjaf/relayer/v2/storage/postgresql"
@@ -99,6 +100,14 @@ func (r Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) bool {
 		return false
 	}
 
+	// TODO(bndw): remove kind filter once client sets tag on all events
+	if evt.Kind == 1 || evt.Kind == 1808 {
+		if !fromStemstrClient(evt) {
+			log.Printf("rejected event, not from stemstr.app: %s", string(jsonb))
+			return false
+		}
+	}
+
 	allowed := false
 	for _, kind := range r.cfg.AllowedKinds {
 		if evt.Kind == kind {
@@ -135,4 +144,17 @@ var defaultAllowedKinds = []int{
 	9735,  // NIP-57: Zaps
 	30078, // NIP-78: Application-specific Data
 	1063,  // NIP-94: File Metadata
+}
+
+func fromStemstrClient(event *nostr.Event) bool {
+	clientTag := event.Tags.GetFirst([]string{"client"})
+	if clientTag == nil {
+		return false
+	}
+
+	if !strings.EqualFold(clientTag.Value(), "stemstr.app") {
+		return false
+	}
+
+	return true
 }
