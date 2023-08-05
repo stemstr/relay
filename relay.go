@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/fiatjaf/relayer/v2"
 	"github.com/fiatjaf/relayer/v2/storage/postgresql"
 	"github.com/jmoiron/sqlx"
 	"github.com/nbd-wtf/go-nostr"
 	"github.com/nbd-wtf/go-nostr/nip11"
+	"golang.org/x/time/rate"
 )
 
 func newRelay(cfg Config, subscriptionsDB *sqlx.DB) (*Relay, error) {
@@ -38,7 +40,10 @@ func newRelay(cfg Config, subscriptionsDB *sqlx.DB) (*Relay, error) {
 		return nil, fmt.Errorf("relay init: %w", err)
 	}
 
-	server, err := relayer.NewServer(r)
+	opts := []relayer.Option{
+		relayer.WithPerConnectionLimiter(rate.Every(time.Millisecond*100), 10),
+	}
+	server, err := relayer.NewServer(r, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("relayer new server: %w", err)
 	}
