@@ -99,15 +99,17 @@ func adminDeleteHandler(cfg Config, db relayer.Storage) func(http.ResponseWriter
 
 		var (
 			id = r.URL.Query().Get("id")
-			pk = r.URL.Query().Get("pubkey")
 		)
 
 		filter := nostr.Filter{}
 		if id != "" {
 			filter.IDs = []string{id}
 		}
-		if pk != "" {
-			filter.Authors = []string{pk}
+
+		if len(filter.IDs) == 0 {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("must provide id param"))
+			return
 		}
 
 		ctx := context.Background()
