@@ -8,3 +8,4 @@ allowed_kinds: []
 admins:
   admin: password
 subscriptions_database_url: "postgresql://admin:password@localhost:6432/subscription?sslmode=disable"
+blastr_nsec: "nsec1kk96g7rj34yfnyyjmgcjwa7kvjvddngxy2lwfx357w4lj8fnc20qpl0cr6"
