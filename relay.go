@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/fiatjaf/relayer/v2"
-	"github.com/fiatjaf/relayer/v2/storage/postgresql"
 	"github.com/jmoiron/sqlx"
 	"github.com/nbd-wtf/go-nostr"
 	"github.com/nbd-wtf/go-nostr/nip11"
@@ -22,15 +21,8 @@ func newRelay(cfg Config, subscriptionsDB *sqlx.DB) (*Relay, error) {
 	}
 
 	r := Relay{
-		cfg: cfg,
-		storage: &postgresql.PostgresBackend{
-			DatabaseURL:       cfg.DatabaseURL,
-			QueryLimit:        1000,
-			QueryAuthorsLimit: 1000,
-			QueryIDsLimit:     1000,
-			QueryKindsLimit:   10,
-			QueryTagsLimit:    20,
-		},
+		cfg:     cfg,
+		storage: newStorage(cfg),
 		updates: make(chan nostr.Event),
 
 		subscriptionsDB: subscriptionsDB,
@@ -55,7 +47,7 @@ func newRelay(cfg Config, subscriptionsDB *sqlx.DB) (*Relay, error) {
 type Relay struct {
 	cfg     Config
 	server  *relayer.Server
-	storage *postgresql.PostgresBackend
+	storage *storage
 	updates chan nostr.Event
 
 	subscriptionsDB *sqlx.DB
@@ -67,7 +59,7 @@ func (r *Relay) GetNIP11InformationDocument() nip11.RelayInformationDocument {
 		Description:   r.cfg.Nip11Description,
 		PubKey:        r.cfg.Nip11Pubkey,
 		Contact:       r.cfg.Nip11Contact,
-		SupportedNIPs: []int{9, 11, 12, 15, 16, 20, 78, 94},
+		SupportedNIPs: []int{9, 11, 12, 15, 16, 20, 45, 78, 94},
 		Software:      "https://github.com/Stemstr",
 		Version:       r.cfg.Nip11Version,
 	}

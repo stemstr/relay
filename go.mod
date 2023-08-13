@@ -11,7 +11,8 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
-replace github.com/fiatjaf/relayer/v2 => github.com/stemstr/relayer/v2 v2.1.2
+// We run off our fork
+replace github.com/fiatjaf/relayer/v2 => github.com/stemstr/relayer/v2 v2.1.4
 
 require (
 	github.com/andybalholm/brotli v1.0.5 // indirect
