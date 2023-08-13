@@ -16,6 +16,7 @@ type Config struct {
 	Nip11Version       string            `yaml:"nip11_version"`
 	Admins             map[string]string `yaml:"admins"`
 	SubscriptionsDBURL string            `yaml:"subscriptions_database_url"`
+	BlastrNsec         string            `yaml:"blastr_nsec"`
 }
 
 // Load Config from a yaml file at path.

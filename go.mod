@@ -6,6 +6,7 @@ require (
 	github.com/fiatjaf/relayer/v2 v2.1.0
 	github.com/jmoiron/sqlx v1.3.1
 	github.com/nbd-wtf/go-nostr v0.20.0
+	github.com/stemstr/blastr v0.1.0
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/time v0.0.0-20210220033141-f8bda1e9f3ba
 	gopkg.in/yaml.v3 v3.0.1
