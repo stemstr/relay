@@ -25,10 +25,12 @@ func TestAfterSave(t *testing.T) {
 				Kind:    1808,
 				Content: "a sample 1808",
 			},
-			expectedContent: "🎉 Let's gooo! nostr:npub1uc3s47zrt8ztahfcyparf80mlrf945ahvagcuu33ljhq8yrmj2pqefmzr7 just shared a track on nostr:npub1stemstrls4f5plqeqkeq43gtjhtycuqd9w25v5r5z5ygaq2n2sjsd6mul5 🙌.\nCheck it out at https://stemstr.app/thread/source.event.id",
+			expectedContent: "🎉 Let's gooo! nostr:npub1uc3s47zrt8ztahfcyparf80mlrf945ahvagcuu33ljhq8yrmj2pqefmzr7 just shared a track on nostr:npub1stemstrls4f5plqeqkeq43gtjhtycuqd9w25v5r5z5ygaq2n2sjsd6mul5 🙌.\nCheck it out at https://stemstr.app/thread/source.event.id/\n#music #tunestr",
 			expectedTags: nostr.Tags{
 				{"p", sourceEventPubkey}, // Tag author
 				{"p", stemstrHexpub},     // Tag stemstr
+				{"t", "music"},
+				{"t", "tunestr"},
 			},
 		},
 		{
