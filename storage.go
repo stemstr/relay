@@ -73,7 +73,7 @@ func generateShareEvent(event *nostr.Event) *nostr.Event {
 	}
 
 	content := fmt.Sprintf(
-		"🎉 Let's gooo! nostr:%s just shared a track on nostr:%s 🙌.\nCheck it out at https://stemstr.app/thread/%s/\n#music #tunestr",
+		"🎉 Let's gooo! nostr:%s just shared a track on nostr:%s 🙌.\n\nCheck it out at https://stemstr.app/thread/%s/\n\n#stemstr #music #tunestr",
 		npub, stemstrNpub, event.ID,
 	)
 
@@ -82,6 +82,7 @@ func generateShareEvent(event *nostr.Event) *nostr.Event {
 		Tags: nostr.Tags{
 			{"p", event.PubKey},  // Tag author
 			{"p", stemstrHexpub}, // Tag stemstr
+			{"t", "stemstr"},
 			{"t", "music"},
 			{"t", "tunestr"},
 		},
