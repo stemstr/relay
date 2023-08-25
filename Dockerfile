@@ -6,7 +6,7 @@ COPY go.* ./
 RUN go mod download
 
 COPY . .
-RUN CGO_ENABLED=1 go build -o /bin/relay ./cmd/relay
+RUN CGO_ENABLED=1 go build -o /bin/relay .
 
 # --- Execution Stage
 
