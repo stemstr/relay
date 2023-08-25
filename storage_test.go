@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/bits-and-blooms/bloom/v3"
 	"github.com/nbd-wtf/go-nostr"
 	"github.com/stretchr/testify/assert"
 )
@@ -50,6 +51,7 @@ func TestAfterSave(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			store := &storage{
+				seenEvents: bloom.New(1000, 5),
 				blastr: &mockBlastr{
 					sendAsserter: func(event nostr.Event) {
 						// Make sure the message is properly rendered

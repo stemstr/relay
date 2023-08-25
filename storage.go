@@ -70,18 +70,15 @@ func (s *storage) BeforeSave(ctx context.Context, event *nostr.Event) {
 }
 
 func (s *storage) AfterSave(event *nostr.Event) {
-	if event.Kind != 1808 {
-		return
-	}
+	// Update the Bloom Filter
+	s.seenEvents.Add([]byte(event.ID))
 
-	if s.blastr == nil {
-		log.Println("blastr nil")
-		return
-	}
-
-	shareEvent := generateShareEvent(event)
-	if shareEvent != nil {
-		s.blastr.Send(context.Background(), *shareEvent)
+	switch event.Kind {
+	case 1808:
+		shareEvent := generateShareEvent(event)
+		if shareEvent != nil && s.blastr != nil {
+			s.blastr.Send(context.Background(), *shareEvent)
+		}
 	}
 }
 
