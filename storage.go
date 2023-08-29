@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 
+	"github.com/bits-and-blooms/bloom/v3"
 	"github.com/fiatjaf/relayer/v2/storage/postgresql"
 	"github.com/nbd-wtf/go-nostr"
 	"github.com/nbd-wtf/go-nostr/nip19"
@@ -33,31 +35,75 @@ func newStorage(cfg Config) *storage {
 
 type storage struct {
 	*postgresql.PostgresBackend
-	cfg    Config
-	blastr blastrIface
+	cfg        Config
+	blastr     blastrIface
+	seenEvents *bloom.BloomFilter
 }
 
 type blastrIface interface {
 	Send(context.Context, nostr.Event) error
 }
 
+func (s *storage) Init() error {
+	// First call the shadowed relayer Init
+	if err := s.PostgresBackend.Init(); err != nil {
+		return err
+	}
+
+	// Now do our own init
+	if s.cfg.BloomFilterSize > 0 && s.cfg.BloomFilterFP > 0 {
+		log.Printf("bloom filter size: %v fp: %v\n", s.cfg.BloomFilterSize, s.cfg.BloomFilterFP)
+		s.seenEvents = bloom.NewWithEstimates(s.cfg.BloomFilterSize, s.cfg.BloomFilterFP)
+	} else {
+		log.Printf("defaulting bloom filter size: 1,000,000 fp: 0.01\n")
+		s.seenEvents = bloom.NewWithEstimates(1_000_000, 0.01)
+	}
+
+	if err := s.initSeenEvents(); err != nil {
+		return fmt.Errorf("initSeenEvents: %w", err)
+	}
+
+	return nil
+}
+
 func (s *storage) BeforeSave(ctx context.Context, event *nostr.Event) {
 }
 
 func (s *storage) AfterSave(event *nostr.Event) {
-	if event.Kind != 1808 {
-		return
+	// Update the Bloom Filter
+	s.seenEvents.Add([]byte(event.ID))
+
+	switch event.Kind {
+	case 1808:
+		shareEvent := generateShareEvent(event)
+		if shareEvent != nil && s.blastr != nil {
+			s.blastr.Send(context.Background(), *shareEvent)
+		}
+	}
+}
+
+func (s *storage) initSeenEvents() error {
+	ids, err := s.getAllEventIDs()
+	if err != nil {
+		return err
 	}
 
-	if s.blastr == nil {
-		log.Println("blastr nil")
-		return
+	for _, id := range ids {
+		s.seenEvents.Add([]byte(id))
 	}
 
-	shareEvent := generateShareEvent(event)
-	if shareEvent != nil {
-		s.blastr.Send(context.Background(), *shareEvent)
+	log.Printf("seenFilter count: %d\n", s.seenEvents.ApproximatedSize())
+	return nil
+}
+
+func (s *storage) getAllEventIDs() ([]string, error) {
+	var ids []string
+	err := s.DB.Select(&ids, "SELECT id FROM event")
+	if err != nil && err != sql.ErrNoRows {
+		return nil, fmt.Errorf("failed to select events: %w", err)
 	}
+
+	return ids, nil
 }
 
 const (

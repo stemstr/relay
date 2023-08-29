@@ -17,6 +17,8 @@ type Config struct {
 	Admins             map[string]string `yaml:"admins"`
 	SubscriptionsDBURL string            `yaml:"subscriptions_database_url"`
 	BlastrNsec         string            `yaml:"blastr_nsec"`
+	BloomFilterSize    uint              `yaml:"bloom_filter_size"`
+	BloomFilterFP      float64           `yaml:"bloom_filter_fp"`
 }
 
 // Load Config from a yaml file at path.
